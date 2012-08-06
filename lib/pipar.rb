@@ -1,7 +1,2 @@
-require "pipar/version"
-
-module Pipar
-  class Pipar
-
-  end
-end
+require 'pipar/version'
+require 'pipar/helpers'

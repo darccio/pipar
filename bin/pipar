@@ -1,0 +1,10 @@
+require 'bundler/setup'
+Bundler.setup
+require 'pipar'
+require 'active_support/core_ext/string/inflections'
+
+registry = ARGV.pop.camelize
+klass = "Pipar::#{registry}".to_class
+
+pipar = klass.new
+pipar.start

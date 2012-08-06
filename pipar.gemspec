@@ -6,8 +6,8 @@ require 'pipar/version'
 Gem::Specification.new do |gem|
   gem.name          = "pipar"
   gem.version       = Pipar::VERSION
-  gem.authors       = ["Dario Castañé"]
-  gem.email         = ["i@dario.im"]
+  gem.authors       = [ "Dario Castañé" ]
+  gem.email         = [ "i@dario.im" ]
   gem.description   = <<-EOF
 Open Data scrapper of political parties registries. Currently only for Ministry of Interior of Spain registry. Open to other countries!
 
@@ -19,6 +19,7 @@ EOF
   gem.summary       = %q{Open Data scrapper of political parties registries. Currently only for Ministry of Interior of Spain registry. Open to other countries!}
   gem.homepage      = "http://github.com/qomun/pipar"
   gem.add_dependency 'watir-webdriver', '= 0.6.1'
+  gem.add_dependency 'activesupport', '= 3.2.7'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

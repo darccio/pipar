@@ -1,3 +1,9 @@
-class
-  # To change this template use File | Settings | File Templates.
+require 'pipar'
+
+module Pipar
+  class Spain
+    def start
+
+    end
+  end
 end
