@@ -4,6 +4,7 @@ require 'pipar'
 require 'active_support/core_ext/string/inflections'
 
 registry = ARGV.pop.camelize
+require "pipar/registry/#{registry}"
 klass = "Pipar::#{registry}".to_class
 
 pipar = klass.new

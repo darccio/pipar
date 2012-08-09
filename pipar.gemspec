@@ -20,6 +20,7 @@ EOF
   gem.homepage      = "http://github.com/qomun/pipar"
   gem.add_dependency 'watir-webdriver', '= 0.6.1'
   gem.add_dependency 'activesupport', '= 3.2.7'
+  gem.add_dependency 'headless', '= 0.3.1'
 
   gem.files         = `git ls-files`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }

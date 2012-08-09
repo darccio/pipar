@@ -6,7 +6,7 @@ class String
     chain.each do |klass_string|
       klass = klass.const_get klass_string
     end
-    klass.is_a? Class ? klass : nil
+    klass.is_a?(Class) ? klass : nil
   rescue NameError
     nil
   end
