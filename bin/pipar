@@ -6,11 +6,11 @@ require 'configuration'
 Configuration.load ARGV[0]
 
 config = Configuration.for('pipar')
-data = File.new config.data_file
-parties = if File.exists? config.data_file and data.size > 0
+parties = if File.exists?(config.data_file)
+            data = File.new config.data_file
             JSON.load(data)
           else
-            []
+            {}
           end
 pipar = config.registry.new
 pipar.start parties

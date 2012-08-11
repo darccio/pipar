@@ -12,7 +12,7 @@ module Pipar
       @images_dir = "#{@config.data_dir}/images"
     end
 
-    def start(parties = [])
+    def start(parties = {})
       next_link = nil
       Headless.ly do
         @browser = Watir::Browser.new :firefox, :profile => get_profile
@@ -24,9 +24,13 @@ module Pipar
           0.upto count_results - 1 do |i|
             next if i < skip_to
             open_party_at i
-            switch_to_popup { parties << extract_party }
+            switch_to_popup do
+              party = extract_party
+              parties[party['id']] = party
+            end
             sleep 2 # We play fair. A full scrape will last about three hours.
           end
+          skip_to = 0
           next_link = @browser.links(:text, 'Siguiente')
         end while next_link.size > 0
       end
@@ -48,7 +52,7 @@ module Pipar
       if parties.size > 0
         page = (parties.size / @config.entries.per_page).to_i
         page += 1 if parties.size == (@config.entries.per_page * page)
-        @browser.goto(@config.page_url % { :page => page })
+        @browser.goto(@config.page_url % {:page => page})
         page
       else
         0
@@ -84,16 +88,21 @@ module Pipar
         fields = @browser.spans(:id, field)
         party[field] = fields.first.text if fields.size > 0 and fields.first.text.strip != ''
       end
-      party['siglas'] = party['nombre'] unless party.has_key? 'siglas'
-      fields = @browser.spans(:id, 'simbolo')
-      party['simbolo'] = get_party_logo(fields, party['siglas']) if fields.size > 0
       fields = @browser.labels(:for, 'ambito')
       party['ambito'] = if fields.size > 0
                           fields.first.text
                         else
-                          data = @browser.text.scan(/Ámbito Territorial\n[A-Za-z]+\n/).first.split "\n"
+                          data = @browser.text.scan(/Ámbito Territorial\n[A-Za-z\/\- ',\.]+\n/).first.split "\n"
                           data.last
                         end
+      party['id'] = if party.has_key? 'siglas'
+                      "#{party['siglas']}_#{party['nombre']}".parameterize
+                    else
+                      party['siglas'] = party['nombre']
+                      party['nombre'].parameterize
+                    end
+      fields = @browser.spans(:id, 'simbolo')
+      party['simbolo'] = get_party_logo(fields, party['siglas']) if fields.size > 0
       party
     end
 
