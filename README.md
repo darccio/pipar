@@ -36,7 +36,18 @@ Or install it yourself as:
 
 ## Usage
 
-    $ pipar country [params ...]
+    $ pipar path/to/recipe
+
+### Recipes
+
+You must write a recipe in order to use Pipar. Check the examples directory. The following attributes are mandatory:
+
++ registry: class to use as scraper.
++ data_dir: where data must be stored.
++ data_file: where to dump the extracted data as JSON.
++ url: initial URL.
+
+Other attributes can be added and made mandatory for one or more registries.
 
 ## Contributing
 
