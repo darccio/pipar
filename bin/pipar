@@ -1,11 +1,17 @@
 require 'bundler/setup'
 Bundler.setup
 require 'pipar'
-require 'active_support/core_ext/string/inflections'
+require 'configuration'
 
-registry = ARGV.pop.camelize
-require "pipar/registry/#{registry}"
-klass = "Pipar::#{registry}".to_class
+Configuration.load ARGV[0]
 
-pipar = klass.new
-pipar.start
+config = Configuration.for('pipar')
+data = File.new config.data_file
+parties = if File.exists? config.data_file and data.size > 0
+            JSON.load(data)
+          else
+            []
+          end
+pipar = config.registry.new
+pipar.start parties
+JSON.dump parties, File.new(config.data_file, 'w+')

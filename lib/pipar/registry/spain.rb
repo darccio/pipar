@@ -8,33 +8,59 @@ require 'active_support/core_ext/string'
 module Pipar
   class Spain
     def initialize
-      @images_dir = "#{Dir.pwd}/data/images"
+      @config = Configuration.for 'pipar'
+      @images_dir = "#{@config.data_dir}/images"
     end
 
-    def start
-      next_link, parties = nil, []
+    def start(parties = [])
+      next_link = nil
       Headless.ly do
         @browser = Watir::Browser.new :firefox, :profile => get_profile
-        @browser.goto 'https://servicio.mir.es/nfrontal/webpartido_politico.html'
-        search = @browser.inputs(:value, 'Buscar').first
-        search.click
+        page = get_to_results_page parties
+        skip_to = get_entries_to_skip parties, page
         begin
           next_link.first.click if next_link
           break unless has_results?
           0.upto count_results - 1 do |i|
-            party_link = get_result_table.links[i]
-            STDERR.puts party_link.text
-            party_link.click
+            next if i < skip_to
+            open_party_at i
             switch_to_popup { parties << extract_party }
+            sleep 2 # We play fair. A full scrape will last about three hours.
           end
           next_link = @browser.links(:text, 'Siguiente')
         end while next_link.size > 0
       end
+      return parties
     rescue => e
-      raise e
+      STDERR.puts e
+      e.backtrace.each do |line|
+        STDERR.puts line
+      end
+      return parties
     ensure
-      @browser.quit if @browser
-      JSON.dump parties, STDOUT
+      @browser.quit unless @browser.nil?
+    end
+
+    def get_to_results_page(parties)
+      @browser.goto @config.url
+      search = @browser.inputs(:value, 'Buscar').first
+      search.click
+      if parties.size > 0
+        page = (parties.size / @config.entries.per_page).to_i
+        page += 1 if parties.size == (@config.entries.per_page * page)
+        @browser.goto(@config.page_url % { :page => page })
+        page
+      else
+        0
+      end
+    end
+
+    def get_entries_to_skip(parties, page)
+      if parties.size > 0
+        parties.size - (@config.entries.per_page * page)
+      else
+        0
+      end
     end
 
     def has_results?
@@ -43,6 +69,12 @@ module Pipar
 
     def count_results
       get_result_table.tbody.trs.size
+    end
+
+    def open_party_at(index)
+      party_link = get_result_table.links[index]
+      STDERR.puts party_link.text
+      party_link.click
     end
 
     def extract_party
@@ -57,16 +89,18 @@ module Pipar
       party['simbolo'] = get_party_logo(fields, party['siglas']) if fields.size > 0
       fields = @browser.labels(:for, 'ambito')
       party['ambito'] = if fields.size > 0
-        fields.first.text
-      else
-        data = @browser.text.scan(/Ámbito Territorial\n[A-Za-z]+\n/).first.split "\n"
-        data.last
-      end
+                          fields.first.text
+                        else
+                          data = @browser.text.scan(/Ámbito Territorial\n[A-Za-z]+\n/).first.split "\n"
+                          data.last
+                        end
       party
     end
 
     def get_party_logo(fields, name)
       return nil if fields.size == 0
+      target = "#{@images_dir}/#{name.parameterize}.jpeg"
+      return get_relative_path(target) if File.exist? target
       image_url = fields.first.imgs.first.src
       @browser.goto image_url
       30.times do
@@ -77,11 +111,10 @@ module Pipar
         end.first
         if file =~ /imagen.*\.jpeg/
           sleep 1 # Just to be sure that file is written to disk.
-          target = "#{@images_dir}/#{name.parameterize}.jpeg"
           File.rename "#{@images_dir}/#{file}", target
-          return Pathname.new(target).relative_path_from(Pathname.new(Dir.pwd))
+          return get_relative_path(target)
         end
-        sleep 1
+        sleep 1 # We try to find the image during 30 seconds.
       end
       STDERR.puts "Unable to get image #{image_url}"
     end
@@ -106,10 +139,17 @@ module Pipar
     end
 
     def switch_to_popup
+      while @browser.driver.window_handles.size == 1
+        sleep 0.25
+      end
       @browser.driver.switch_to.window @browser.driver.window_handles[1]
       yield
       @browser.driver.switch_to.window @browser.driver.window_handles[0]
       @browser.windows[1].close
+    end
+
+    def get_relative_path(path)
+      Pathname.new(path).relative_path_from(Pathname.new(Dir.pwd))
     end
   end
 end
