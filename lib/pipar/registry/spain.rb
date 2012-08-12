@@ -109,13 +109,13 @@ module Pipar
                       party['nombre'].parameterize
                     end
       fields = @browser.spans(:id, 'simbolo')
-      party['simbolo'] = get_party_logo(fields, party['siglas']) if fields.size > 0
+      party['simbolo'] = get_party_logo(fields, party['id']) if fields.size > 0
       party
     end
 
     def get_party_logo(fields, name)
       return nil if fields.size == 0
-      target = "#{@images_dir}/#{name.parameterize}.jpeg"
+      target = "#{@images_dir}/#{name}.jpeg"
       return get_relative_path(target) if File.exist? target
       image_url = fields.first.imgs.first.src
       @browser.goto image_url
