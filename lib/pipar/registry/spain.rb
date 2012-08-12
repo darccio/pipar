@@ -49,17 +49,24 @@ module Pipar
       @browser.goto @config.url
       search = @browser.inputs(:value, 'Buscar').first
       search.click
-      if parties.size > 0
-        page = (parties.size / @config.entries.per_page).to_i
-        page += 1 if parties.size == (@config.entries.per_page * page)
+      if @config.start_page > 0
+        page = @config.start_page
         @browser.goto(@config.page_url % {:page => page})
         page
       else
-        0
+        if parties.size > 0
+          page = (parties.size / @config.entries.per_page).to_i
+          page += 1 if parties.size == (@config.entries.per_page * page)
+          @browser.goto(@config.page_url % {:page => page})
+          page
+        else
+          0
+        end
       end
     end
 
     def get_entries_to_skip(parties, page)
+      return @config.skip_to if @config.skip_to > 0
       if parties.size > 0
         parties.size - (@config.entries.per_page * page)
       else

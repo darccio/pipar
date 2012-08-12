@@ -12,6 +12,9 @@ parties = if File.exists?(config.data_file)
           else
             {}
           end
-pipar = config.registry.new
-pipar.start parties
-JSON.dump parties, File.new(config.data_file, 'w+')
+begin
+  pipar = config.registry.new
+  parties = pipar.start parties
+ensure
+  JSON.dump parties, File.new(config.data_file, 'w+')
+end
