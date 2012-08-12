@@ -16,5 +16,7 @@ begin
   pipar = config.registry.new
   parties = pipar.start parties
 ensure
+  parties['__metadata__'] = config.metadata
+  parties['__metadata__']['date_created'] = Time.now
   JSON.dump parties, File.new(config.data_file, 'w+')
 end
