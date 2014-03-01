@@ -22,21 +22,13 @@ Así es cómo acabó con este nombre: Pipar. Ahora con más datos. Disponible ba
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-    gem 'pipar'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install pipar
+    $ git clone https://github.com/qomun/pipar.git
+    $ cd pipar
+    $ bundle install
 
 ## Usage
 
-    $ pipar path/to/recipe
+    $ ruby bin/pipar path/to/recipe
 
 ### Recipes
 

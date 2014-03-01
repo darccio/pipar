@@ -23,7 +23,7 @@ EOF
   gem.add_dependency 'headless', '= 0.3.1'
   gem.add_dependency 'configuration', '= 1.3.2'
 
-  gem.files         = `git ls-files`.split($/)
+  gem.files         = `git ls-files | grep -Ev "^data"`.split($/)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
