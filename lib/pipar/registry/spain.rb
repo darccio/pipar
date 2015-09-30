@@ -31,7 +31,7 @@ module Pipar
             sleep 2 # We play fair. A full scrape will last about three hours.
           end
           skip_to = 0
-          next_link = @browser.links(:text, 'Siguiente')
+          next_link = @browser.links(:text, 'Following')
         end while next_link.size > 0
       end
       return parties
